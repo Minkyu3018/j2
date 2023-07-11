@@ -38,7 +38,7 @@ public class FileBoard {
     private String writer;
     
     @BatchSize(size = 20)
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch = FetchType.LAZY)
+    @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name="board")
     @Builder.Default
     private List<FileBoardImage> images = new ArrayList<>(); // 바꿀 수 없다, 지우면 안됨
@@ -50,6 +50,11 @@ public class FileBoard {
         // 이미지 추가
         images.add(boardImage);
 
+    }
+
+    // 수정= 비워줘야함
+    public void clearImages(){
+        images.clear(); // 이미지를 비운다.
 
     }
 

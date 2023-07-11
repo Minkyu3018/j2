@@ -11,7 +11,9 @@ import org.zerock.j2.dto.PageRequestDTO;
 import org.zerock.j2.dto.PageResponseDTO;
 import org.zerock.j2.entity.FileBoard;
 import org.zerock.j2.entity.QFileBoard;
+import org.zerock.j2.entity.QFileBoardImage;
 
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPQLQuery;
 
 import lombok.extern.log4j.Log4j2;
@@ -19,6 +21,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class FileBoardSearchImpl extends QuerydslRepositorySupport implements FileBoardSearch {
 
+    // step1
     public FileBoardSearchImpl() {
         super(FileBoard.class);
     }
@@ -27,8 +30,13 @@ public class FileBoardSearchImpl extends QuerydslRepositorySupport implements Fi
     public PageResponseDTO<FileBoardListDTO> list(PageRequestDTO pageRequestDTO) {
 
         QFileBoard board = QFileBoard.fileBoard;
+        QFileBoardImage boardImage = QFileBoardImage.fileBoardImage;
 
         JPQLQuery<FileBoard> query = from(board);
+        query.leftJoin(board.images, boardImage);
+
+        query.where(boardImage.ord.eq(0));
+
 
         int pageNum = pageRequestDTO.getPage() - 1 < 0 ? 0 : pageRequestDTO.getPage() - 1;
 
@@ -39,14 +47,26 @@ public class FileBoardSearchImpl extends QuerydslRepositorySupport implements Fi
 
         this.getQuerydsl().applyPagination(pageable, query);
 
-        List<FileBoard> list = query.fetch();
+        JPQLQuery<FileBoardListDTO> listQuery =  query.select( Projections.bean(
+                    FileBoardListDTO.class,
+                    board.bno,
+                    board.title,
+                    boardImage.uuid,
+                    boardImage.fname)); // 목록
 
-        list.forEach(fb -> {
-            log.info(fb);
-            log.info(fb.getImages());
-        });
+        List<FileBoardListDTO> list = listQuery.fetch();
+        long totalCount = listQuery.fetchCount();
 
-        return null;
+        return new PageResponseDTO(list,totalCount,pageRequestDTO);
+
+        // List<FileBoard> list = query.fetch();
+
+        // list.forEach(fb -> {
+        //     log.info(fb);
+        //     log.info(fb.getImages());
+        // });
+
+        // return null;
 
     }
 
