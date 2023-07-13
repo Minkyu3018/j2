@@ -20,6 +20,7 @@ import net.coobird.thumbnailator.Thumbnailator;
 @Log4j2
 public class FileUploader {
 
+    //예외처리
     public static class UploadException extends RuntimeException{
         
         public UploadException(String msg){
@@ -29,6 +30,27 @@ public class FileUploader {
     
     @Value("${org.zerock.upload.path}")
     private String path;
+
+    // 원본파일 , 섬네일 삭제 부분
+    public void removeFiles(List<String> fileNames) {
+        if(fileNames == null || fileNames.size() == 0){
+            return;
+        }
+
+        for (String fname : fileNames) {
+
+            //원본 파일
+            File original = new File(path, fname);
+            //섬네일 파일
+            File thumb = new File(path, "s_"+fname);
+
+            // 이 파일이 존재한다면 삭제
+            if(thumb.exists()) {
+                thumb.delete();
+            }
+            original.delete();
+        }
+    }
 
     public List<String> uploadFiles(List<MultipartFile> files, boolean makeThumbnail){
 
