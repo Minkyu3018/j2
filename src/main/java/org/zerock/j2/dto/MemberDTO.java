@@ -20,4 +20,9 @@ public class MemberDTO {
 
     private boolean admin;
 
+    // token값 추가
+    private String accessToken;
+
+    private String refreshToken;
+
 }
